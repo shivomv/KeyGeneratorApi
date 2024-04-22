@@ -120,7 +120,7 @@ namespace KeyGenerator.Controllers
             static List<List<string>> PageNumberOrder(List<List<string>> example)
             {
                 Dictionary<string, string> pageMapping = new Dictionary<string, string>();
-                int currentPage = 1;
+                int currentPage = 3;
 
                 foreach (var row in example)
                 {

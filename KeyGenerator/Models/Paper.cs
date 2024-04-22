@@ -29,7 +29,7 @@ namespace KeyGenerator.Models
 
         public string? PaperNumber { get; set; }
 
-        public DateTime? ExamDate { get; set; }
+        public DateTime ExamDate { get; set; } 
 
         public int? NumberofQuestion { get; set; }
 

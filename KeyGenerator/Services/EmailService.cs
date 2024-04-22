@@ -58,11 +58,11 @@ namespace KeyGenerator.Services
         private static readonly int SmtpPort = 587;
 
         //Smtp smtp 
-        private static readonly string SenderEmail = "shivom.chandrakala@gmail.com";
-        private static readonly string SenderPassword = "dqmdnxgvmyofntjj";
+       // private static readonly string SenderEmail = "shivom.chandrakala@gmail.com";
+        //private static readonly string SenderPassword = "dqmdnxgvmyofntjj";
 
-        /*private static readonly string SenderEmail = "cupl199935@gmail.com";
-        private static readonly string SenderPassword = "svpkyvjwkdyvqlol";*/
+        private static readonly string SenderEmail = "cupl199935@gmail.com";
+        private static readonly string SenderPassword = "svpkyvjwkdyvqlol";
 
         //kartikeya smtp 
         /*private static readonly string SenderEmail = "kartikey.kg.888@gmail.com";

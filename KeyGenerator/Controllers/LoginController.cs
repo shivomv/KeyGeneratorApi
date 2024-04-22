@@ -77,60 +77,40 @@ namespace KeyGen.Controller
             return response;
         }
 
+        //Login api 
         [AllowAnonymous]
         [HttpPost]
         public IActionResult Login([FromBody] MLoginRequest model)
         {
-            IActionResult response = Unauthorized();
-            /*var user = _context.Users.FirstOrDefault(u => u.EmailAddress == model.Email);
-
-            if (user == null)
-            {
-                return NotFound("User not found");
-            }
-
-            int UserId = user.User_ID;
-
-            var userAuth = _context.UserAuthentication.FirstOrDefault(ua => ua.User_ID == UserId);*/
-
-            var user1 = _context.Users.FirstOrDefault(u => u.EmailAddress == model.Email);
-            if (user1 == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                if (user1.Status == false)
-                {
-                    return Unauthorized("User is inactive");
-                }
-            }
             var userAuth = (from user in _context.Users
                             join ua in _context.UserAuthentication on user.UserID equals ua.UserID
                             where user.EmailAddress == model.Email
-                            select ua).FirstOrDefault();
+                            select new { ua, user.Status }).FirstOrDefault();
 
             if (userAuth == null)
             {
                 return NotFound("User not found");
             }
+
+            if (!userAuth.Status)
+            {
+                return Unauthorized("User is inactive");
+            }
+
             string hashedPassword = Sha256Hasher.ComputeSHA256Hash(model.Password);
             Console.WriteLine(hashedPassword);
-            if (hashedPassword != userAuth.Password)
+
+            if (hashedPassword != userAuth.ua.Password)
             {
                 return Unauthorized("Invalid password");
             }
 
-            if (userAuth != null)
-            {
-                var token = GenerateToken(userAuth);
+            var token = GenerateToken(userAuth.ua);
 
-                _logger.LogEvent($"User Logged-in", "Login", userAuth.UserID);
-                response = Ok(new { token = token, userAuth.UserID, userAuth.AutoGenPass });
-
-            }
-            return response;
+            _logger.LogEvent($"User Logged-in", "Login", userAuth.ua.UserID);
+            return Ok(new { token = token, userAuth.ua.UserID, userAuth.ua.AutoGenPass });
         }
+
 
         [HttpPut("Forgotpassword")]
         public IActionResult ResetPassword([FromBody] LoginRequest user)

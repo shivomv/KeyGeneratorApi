@@ -4,6 +4,7 @@ using KeyGenerator.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KeyGenerator.Migrations
 {
     [DbContext(typeof(KeyGeneratorDBContext))]
-    partial class KeyGeneratorDBContextModelSnapshot : ModelSnapshot
+    [Migration("20240416050756_Eventlogsize")]
+    partial class Eventlogsize
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -130,10 +133,12 @@ namespace KeyGenerator.Migrations
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("EventID"));
 
                     b.Property<string>("Category")
-                        .HasColumnType("longtext");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<string>("Event")
-                        .HasColumnType("longtext");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<int>("EventTriggeredBy")
                         .HasColumnType("int");
@@ -241,7 +246,7 @@ namespace KeyGenerator.Migrations
                     b.Property<int>("CreatedByID")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("ExamDate")
+                    b.Property<DateTime?>("ExamDate")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("ExamType")
