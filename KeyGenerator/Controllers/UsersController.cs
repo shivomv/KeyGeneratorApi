@@ -167,7 +167,7 @@ namespace KeyGenerator.Controllers
                     <p style=""color: #F00;"">
                         Please change the password immediately after login.
                     </p>
-                    <a href=""#login-link"" style=""display: inline-block; padding: 10px 20px; background-color: #007BFF; color: #fff; text-decoration: none; border-radius: 5px; margin-top: 15px;"">Login Here</a>
+                    <a href=""http://keygen.chandrakala.co.in/"" style=""display: inline-block; padding: 10px 20px; background-color: #007BFF; color: #fff; text-decoration: none; border-radius: 5px; margin-top: 15px;"">Login Here</a>
                 </div>";
 
             var result = new EmailService(_context,_logger).SendEmail(user.EmailAddress, "Welcome to CUPL!", emailBody);
