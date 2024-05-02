@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace KeyGenerator.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -37,6 +37,22 @@ namespace KeyGenerator.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AnswersKeys", x => x.Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "bookletPdfs",
+                columns: table => new
+                {
+                    BookletPDFID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    PaperID = table.Column<int>(type: "int", nullable: false),
+                    BookletData = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_bookletPdfs", x => x.BookletPDFID);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -159,7 +175,7 @@ namespace KeyGenerator.Migrations
                     SubjectID = table.Column<int>(type: "int", nullable: true),
                     PaperNumber = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    ExamDate = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    ExamDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     NumberofQuestion = table.Column<int>(type: "int", nullable: true),
                     BookletSize = table.Column<int>(type: "int", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
@@ -391,6 +407,9 @@ namespace KeyGenerator.Migrations
         {
             migrationBuilder.DropTable(
                 name: "AnswersKeys");
+
+            migrationBuilder.DropTable(
+                name: "bookletPdfs");
 
             migrationBuilder.DropTable(
                 name: "Courses");

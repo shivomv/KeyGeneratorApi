@@ -84,6 +84,25 @@ namespace KeyGenerator.Controllers
             return Ok(eventLogs.AsQueryable());
         }
 
+        [HttpGet("Events/User/{ID}/Count/{count}")]
+        public async Task<ActionResult<IEnumerable<EventLog>>> GetEventLogsByUserIDAndCount(int ID, int count)
+        {
+            // Query the database for EventLogs by ID, order by timestamp, and take the specified number of logs
+            var eventLogs = await _context.EventLogs
+                .Where(e => e.EventTriggeredBy == ID)
+                .OrderByDescending(e => e.LoggedAT)
+                .Take(count)
+                .ToListAsync();
+
+            if (eventLogs == null || eventLogs.Count == 0)
+            {
+                return NotFound();
+            }
+
+            return Ok(eventLogs);
+        }
+
+
         [HttpGet("Events/{ID}/{category}")]
         public async Task<ActionResult<IQueryable<EventLog>>> GetEventLogbyUserIDCategory(int ID, string category)
         {

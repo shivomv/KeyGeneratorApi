@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KeyGenerator.Migrations
 {
     [DbContext(typeof(KeyGeneratorDBContext))]
-    [Migration("20240417064403_status")]
-    partial class status
+    [Migration("20240502130040_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -63,6 +63,25 @@ namespace KeyGenerator.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("AnswersKeys");
+                });
+
+            modelBuilder.Entity("KeyGenerator.Models.BookletPdfData", b =>
+                {
+                    b.Property<int>("BookletPDFID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("BookletPDFID"));
+
+                    b.Property<string>("BookletData")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("PaperID")
+                        .HasColumnType("int");
+
+                    b.HasKey("BookletPDFID");
+
+                    b.ToTable("bookletPdfs");
                 });
 
             modelBuilder.Entity("KeyGenerator.Models.CType", b =>

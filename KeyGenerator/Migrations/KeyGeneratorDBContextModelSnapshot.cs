@@ -62,6 +62,25 @@ namespace KeyGenerator.Migrations
                     b.ToTable("AnswersKeys");
                 });
 
+            modelBuilder.Entity("KeyGenerator.Models.BookletPdfData", b =>
+                {
+                    b.Property<int>("BookletPDFID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("BookletPDFID"));
+
+                    b.Property<string>("BookletData")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("PaperID")
+                        .HasColumnType("int");
+
+                    b.HasKey("BookletPDFID");
+
+                    b.ToTable("bookletPdfs");
+                });
+
             modelBuilder.Entity("KeyGenerator.Models.CType", b =>
                 {
                     b.Property<int>("TypeID")

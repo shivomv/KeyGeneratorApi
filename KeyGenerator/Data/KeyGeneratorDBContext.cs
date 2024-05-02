@@ -24,6 +24,8 @@ namespace KeyGenerator.Data
         public DbSet<User> Users { get; set; }
         public DbSet<UserAuth> UserAuthentication { get; set; }
 
+        public DbSet<BookletPdfData> bookletPdfs { get; set; }
+
 
         public KeyGeneratorDBContext(DbContextOptions<KeyGeneratorDBContext> options) : base(options)
         {
