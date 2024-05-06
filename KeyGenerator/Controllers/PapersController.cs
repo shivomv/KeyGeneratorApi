@@ -161,6 +161,83 @@ namespace KeyGenerator.Controllers
             return Ok(papers);
         }
 
+        [HttpGet("Program/{id}")]
+        public async Task<ActionResult<IEnumerable<PaperDetails>>> GetPaperByProgramID(int id)
+        {
+            var papers = await _context.Papers
+                .Where(u => u.ProgrammeID == id)
+                .GroupJoin(
+                    _context.Programmes,
+                    p => p.ProgrammeID,
+                    prg => prg.ProgrammeID,
+                    (p, prgs) => new { Paper = p, Programmes = prgs }
+                )
+                .SelectMany(
+                    x => x.Programmes.DefaultIfEmpty(),
+                    (x, prg) => new { x.Paper, Programme = prg }
+                )
+                .GroupJoin(
+                    _context.Courses,
+                    pc => pc.Paper.CourseID,
+                    c => c.CourseID,
+                    (pc, cs) => new { pc.Paper, pc.Programme, Courses = cs }
+                )
+                .SelectMany(
+                    x => x.Courses.DefaultIfEmpty(),
+                    (x, c) => new { x.Paper, x.Programme, Course = c }
+                )
+                .GroupJoin(
+                    _context.Subjects,
+                    pcs => pcs.Paper.SubjectID,
+                    s => s.SubjectID,
+                    (pcs, ss) => new { pcs.Paper, pcs.Programme, pcs.Course, Subjects = ss }
+                )
+                .SelectMany(
+                    x => x.Subjects.DefaultIfEmpty(),
+                    (x, s) => new { x.Paper, x.Programme, x.Course, Subject = s }
+                )
+                .GroupJoin(
+                    _context.Users,
+                    puc => puc.Paper.CreatedByID,
+                    u => u.UserID,
+                    (puc, us) => new { puc.Paper, puc.Programme, puc.Course, puc.Subject, Users = us }
+                )
+                .SelectMany(
+                    x => x.Users.DefaultIfEmpty(),
+                    (x, u) => new { x.Paper, x.Programme, x.Course, x.Subject, CreatedBy = u }
+                )
+                .Select(p => new PaperDetails
+                {
+                    PaperID = p.Paper.PaperID,
+                    ProgrammeID = p.Paper.ProgrammeID,
+                    PaperName = p.Paper.PaperName,
+                    CatchNumber = p.Paper.CatchNumber,
+                    PaperCode = p.Paper.PaperCode,
+                    CourseID = p.Paper.CourseID ?? 0,
+                    ExamType = p.Paper.ExamType,
+                    SubjectID = p.Paper.SubjectID ?? 0,
+                    PaperNumber = p.Paper.PaperNumber,
+                    ExamDate = p.Paper.ExamDate,
+                    NumberofQuestion = p.Paper.NumberofQuestion ?? 0,
+                    BookletSize = p.Paper.BookletSize ?? 0,
+                    CreatedAt = p.Paper.CreatedAt,
+                    CreatedByID = p.Paper.CreatedByID,
+                    MasterUploaded = p.Paper.MasterUploaded,
+                    KeyGenerated = p.Paper.KeyGenerated,
+                    ProgrammeName = p.Programme != null ? p.Programme.ProgrammeName : "",
+                    CourseName = p.Course != null ? p.Course.CourseName : "",
+                    SubjectName = p.Subject != null ? p.Subject.SubjectName : "",
+                    CreatedBy = p.CreatedBy != null ? p.CreatedBy.FirstName : ""
+                })
+                .ToListAsync();
+
+            if (papers == null || papers.Count == 0)
+            {
+                return NotFound();
+            }
+
+            return Ok(papers);
+        }
 
 
         [HttpGet("Programme/{id}")]
@@ -232,7 +309,7 @@ namespace KeyGenerator.Controllers
             var masterUploadedCount = await _context.Papers
                 .CountAsync(p => p.MasterUploaded);
 
-            var pendingCount = allPapersCount - keyGeneratedCount - masterUploadedCount;
+            var pendingCount = allPapersCount - masterUploadedCount;
 
             var statusCount = new StatusCount
             {

@@ -162,7 +162,7 @@ namespace KeyGen.Controller
             /*var emailservice = new EmailService(_configuration);
             var result = emailservice.SendEmail(users.EmailAddress, "Reset-Password", emailBody);*/
             _logger.LogEvent("Password-Reset", "Login", users.UserID);
-            return Ok(new { newPassword, result });
+            return Ok(new { result });
 
 
         }

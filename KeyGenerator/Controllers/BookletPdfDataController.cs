@@ -69,7 +69,7 @@ namespace KeyGenerator.Controllers
                 if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
                 {
                     // Now you have the user ID
-                    _logger.LogEvent($"Updated BookletPDFData with PaperID: {paperID}", "BookletPdfData", userId);
+                    _logger.LogEvent($"Updated BookletPDFData in PaperID: {paperID}", "BookletPdfData", userId);
                 }
             }
             catch (DbUpdateConcurrencyException)
@@ -100,7 +100,7 @@ namespace KeyGenerator.Controllers
             if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
             {
                 // Now you have the user ID
-                _logger.LogEvent($"Added BookletPDFData with PaperID: {bookletPdfData.PaperID}", "BookletPdfData", userId);
+                _logger.LogEvent($"Added BookletPDFData in PaperID: {bookletPdfData.PaperID}", "BookletPdfData", userId);
             }
 
             return CreatedAtAction("GetBookletPdfDataByPaperID", new { paperID = bookletPdfData.PaperID }, bookletPdfData);
@@ -123,7 +123,7 @@ namespace KeyGenerator.Controllers
             if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
             {
                 // Now you have the user ID
-                _logger.LogEvent($"Deleted BookletPDFData with PaperID: {paperID}", "BookletPdfData", userId);
+                _logger.LogEvent($"Deleted BookletPDFData in PaperID: {paperID}", "BookletPdfData", userId);
             }
 
             return NoContent();

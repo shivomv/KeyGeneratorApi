@@ -263,15 +263,15 @@ namespace KeyGenerator.Controllers
                 /*var subject = _context.Subjects.FirstOrDefault(u => u.SubjectName == Subject);*/
                 var group = _context.Groups.FirstOrDefault(i => i.GroupID == prog.GroupID);
                 var keys = _context.AnswersKeys
-    .Where(k => k.ProgID== progID && k.PaperID == PaperID && k.CatchNumber == CatchNumber)
-    .Select(k => new
-    {
-        pageNumber = k.PageNumber,
-        questionNumber = k.QuestionNumber,
-        answer = k.Answer,
-        setID = k.SetID
-    })
-    .ToList();
+                .Where(k => k.ProgID== progID && k.PaperID == PaperID && k.CatchNumber == CatchNumber)
+                .Select(k => new
+                {
+                    pageNumber = k.PageNumber,
+                    questionNumber = k.QuestionNumber,
+                    answer = k.Answer,
+                    setID = k.SetID
+                })
+                .ToList();
 
 
                 if (keys == null)
@@ -282,7 +282,7 @@ namespace KeyGenerator.Controllers
                 if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
                 {
                     // Now you have the user ID
-                    _logger.LogEvent($"Master Key Uploaded", "Key",userId);
+                    _logger.LogEvent($"Master Key for Catch No:{CatchNumber} Viewed ", "Key",userId);
                 }
                 return Ok(keys);
             }
@@ -292,5 +292,39 @@ namespace KeyGenerator.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+        [Authorize]
+        [HttpGet("masterkeys")]
+        public IActionResult GetmasterkeysByName(int progID, string CatchNumber, int PaperID)
+        {
+            try
+            {
+                var prog = _context.Programmes.Find(progID);
+                var group = _context.Groups.FirstOrDefault(i => i.GroupID == prog.GroupID);
+                var keys = _context.AnswersKeys
+                    .Where(k => k.ProgID == progID && k.PaperID == PaperID && k.CatchNumber == CatchNumber && k.SetID == 1)
+                    .Select(k => new
+                    {
+                        pageNumber = k.PageNumber,
+                        questionNumber = k.QuestionNumber,
+                        answer = k.Answer,
+                        setID = k.SetID
+                    })
+                    .ToList();
+
+                if (keys == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(keys);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+
     }
 }
