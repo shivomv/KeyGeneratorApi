@@ -36,7 +36,7 @@ namespace KeyGenerator.Models
         public int? BookletSize { get; set; }
 
         [Required]
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = TimeZoneInfo.ConvertTime(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("India Standard Time"));
 
         [Required]
         public int CreatedByID { get; set; }

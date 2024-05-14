@@ -44,12 +44,12 @@ namespace KeyGenerator.Controllers
             {
                 var file = Request.Form.Files[0];
                 var prog = await _context.Programmes.FindAsync(ProgID);
-                if(prog==null)
+                if (prog == null)
                 {
                     return NotFound();
                 }
                 var paperinfo = await _context.Papers.FindAsync(PaperID);
-                
+
 
                 if (file != null && file.Length > 0)
                 {
@@ -91,7 +91,7 @@ namespace KeyGenerator.Controllers
                         _logger.LogEvent($"Master Key Uploaded for {CatchNumber}", "Key", userId);
                     }
 
-                    return Ok(new { prog,CatchNumber, paperinfo.PaperID});
+                    return Ok(new { prog, CatchNumber, paperinfo.PaperID });
                 }
                 else
                 {
@@ -263,7 +263,7 @@ namespace KeyGenerator.Controllers
                 /*var subject = _context.Subjects.FirstOrDefault(u => u.SubjectName == Subject);*/
                 var group = _context.Groups.FirstOrDefault(i => i.GroupID == prog.GroupID);
                 var keys = _context.AnswersKeys
-                .Where(k => k.ProgID== progID && k.PaperID == PaperID && k.CatchNumber == CatchNumber)
+                .Where(k => k.ProgID == progID && k.PaperID == PaperID && k.CatchNumber == CatchNumber)
                 .Select(k => new
                 {
                     pageNumber = k.PageNumber,
@@ -282,7 +282,7 @@ namespace KeyGenerator.Controllers
                 if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
                 {
                     // Now you have the user ID
-                    _logger.LogEvent($"Master Key for Catch No:{CatchNumber} Viewed ", "Key",userId);
+                    _logger.LogEvent($"Master Key for Catch No:{CatchNumber} Viewed ", "Key", userId);
                 }
                 return Ok(keys);
             }

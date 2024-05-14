@@ -68,7 +68,6 @@ namespace KeyGenerator.Controllers
                 var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name);
                 if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
                 {
-                    // Now you have the user ID
                     _logger.LogEvent($"Updated BookletPDFData in PaperID: {paperID}", "BookletPdfData", userId);
                 }
             }
@@ -94,14 +93,22 @@ namespace KeyGenerator.Controllers
         [HttpPost]
         public async Task<ActionResult<BookletPdfData>> PostBookletPdfData(BookletPdfData bookletPdfData)
         {
-            _context.bookletPdfs.Add(bookletPdfData);
-            await _context.SaveChangesAsync();
             var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name);
             if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
             {
-                // Now you have the user ID
-                _logger.LogEvent($"Added BookletPDFData in PaperID: {bookletPdfData.PaperID}", "BookletPdfData", userId);
+                bookletPdfData.UploadedBy = userId;
             }
+            else
+            {
+                return Unauthorized();
+            }
+
+            bookletPdfData.UploadedDateTime = TimeZoneInfo.ConvertTime(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("India Standard Time"));
+
+            _context.bookletPdfs.Add(bookletPdfData);
+            await _context.SaveChangesAsync();
+
+            _logger.LogEvent($"Added BookletPDFData in PaperID: {bookletPdfData.PaperID}", "BookletPdfData", userId);
 
             return CreatedAtAction("GetBookletPdfDataByPaperID", new { paperID = bookletPdfData.PaperID }, bookletPdfData);
         }
@@ -122,7 +129,6 @@ namespace KeyGenerator.Controllers
             var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name);
             if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
             {
-                // Now you have the user ID
                 _logger.LogEvent($"Deleted BookletPDFData in PaperID: {paperID}", "BookletPdfData", userId);
             }
 

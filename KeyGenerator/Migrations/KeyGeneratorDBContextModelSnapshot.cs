@@ -76,6 +76,12 @@ namespace KeyGenerator.Migrations
                     b.Property<int>("PaperID")
                         .HasColumnType("int");
 
+                    b.Property<int>("UploadedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UploadedDateTime")
+                        .HasColumnType("datetime(6)");
+
                     b.HasKey("BookletPDFID");
 
                     b.ToTable("bookletPdfs");
@@ -200,6 +206,31 @@ namespace KeyGenerator.Migrations
                     b.HasKey("GroupID");
 
                     b.ToTable("Groups");
+                });
+
+            modelBuilder.Entity("KeyGenerator.Models.MasterKeyFile", b =>
+                {
+                    b.Property<int>("MasterKeyFileID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("MasterKeyFileID"));
+
+                    b.Property<string>("MasterKeyFileData")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("PaperID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UploadedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UploadedDateTime")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("MasterKeyFileID");
+
+                    b.ToTable("masterKeyFiles");
                 });
 
             modelBuilder.Entity("KeyGenerator.Models.Module", b =>

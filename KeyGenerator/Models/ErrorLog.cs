@@ -15,6 +15,6 @@ namespace KeyGenerator.Models
 
         public string OccuranceSpace{ get; set; }
 
-        public DateTime LoggedAt { get; set; } = DateTime.Now;
+        public DateTime LoggedAt { get; set; } = TimeZoneInfo.ConvertTime(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("India Standard Time"));
     }
 }

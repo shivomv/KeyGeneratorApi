@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace KeyGenerator.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class masterkeyfileupload : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -48,7 +48,9 @@ namespace KeyGenerator.Migrations
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     PaperID = table.Column<int>(type: "int", nullable: false),
                     BookletData = table.Column<string>(type: "longtext", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4")
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    UploadedBy = table.Column<int>(type: "int", nullable: false),
+                    UploadedDateTime = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -138,6 +140,24 @@ namespace KeyGenerator.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Groups", x => x.GroupID);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "masterKeyFiles",
+                columns: table => new
+                {
+                    MasterKeyFileID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    PaperID = table.Column<int>(type: "int", nullable: false),
+                    MasterKeyFileData = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    UploadedBy = table.Column<int>(type: "int", nullable: false),
+                    UploadedDateTime = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_masterKeyFiles", x => x.MasterKeyFileID);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -425,6 +445,9 @@ namespace KeyGenerator.Migrations
 
             migrationBuilder.DropTable(
                 name: "Groups");
+
+            migrationBuilder.DropTable(
+                name: "masterKeyFiles");
 
             migrationBuilder.DropTable(
                 name: "Modules");

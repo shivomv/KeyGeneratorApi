@@ -15,7 +15,7 @@ namespace KeyGenerator.Models
 
         public int EventTriggeredBy { get; set; }
 
-        public DateTime LoggedAT { get; set; } = DateTime.Now;
+        public DateTime LoggedAT { get; set; } = TimeZoneInfo.ConvertTime(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("India Standard Time"));
 
     }
 }

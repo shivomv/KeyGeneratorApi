@@ -14,6 +14,7 @@ using KeyGenerator.Models.NonDBModels;
 
 namespace KeyGenerator.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class PapersController : ControllerBase
@@ -28,7 +29,7 @@ namespace KeyGenerator.Controllers
         }
 
         // GET: api/Papers
-        [Authorize]
+        //get all papers data 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PaperDetails>>> GetPapers()
         {
@@ -102,7 +103,7 @@ namespace KeyGenerator.Controllers
         }
 
         // GET: api/Papers/5
-        [Authorize]
+        //get paperdata by paperid
         [HttpGet("{id}")]
         public async Task<ActionResult<object>> GetPaper(int id)
         {
@@ -140,8 +141,7 @@ namespace KeyGenerator.Controllers
             return Ok(paperDetails);
         }
 
-
-        [Authorize]
+        // post bulk paperdata
         [HttpPost]
         public async Task<ActionResult<IEnumerable<Paper>>> PostPapers(IEnumerable<Paper> papers)
         {
@@ -161,6 +161,7 @@ namespace KeyGenerator.Controllers
             return Ok(papers);
         }
 
+        //get all papers data by program id
         [HttpGet("Program/{id}")]
         public async Task<ActionResult<IEnumerable<PaperDetails>>> GetPaperByProgramID(int id)
         {
@@ -239,7 +240,7 @@ namespace KeyGenerator.Controllers
             return Ok(papers);
         }
 
-
+        //get basic papers by program id
         [HttpGet("Programme/{id}")]
         public async Task<ActionResult<IEnumerable<Paper>>> GetPaperByProgrammeID(int id)
         {
@@ -254,8 +255,6 @@ namespace KeyGenerator.Controllers
         }
 
         // PUT: api/Papers/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPaper(int id, Paper paper)
         {
@@ -292,6 +291,8 @@ namespace KeyGenerator.Controllers
             return NoContent();
         }
 
+
+        //status counts for dashboard count
         [HttpGet("StatusCount")]
         public async Task<ActionResult<StatusCount>> StatusCount()
         {
@@ -324,10 +325,31 @@ namespace KeyGenerator.Controllers
             return statusCount;
         }
 
-        [HttpGet("Search")]
-        public async Task<ActionResult<IEnumerable<Paper>>> SearchPapers([FromQuery] string searchData)
+
+        // Get catch number by Progam id
+        //get catch numbers and paper IDs by program id
+        [HttpGet("CatchNumbersByProgramID/{id}")]
+        public async Task<ActionResult<IEnumerable<object>>> GetCatchNumbersAndPaperIDsByProgramID(int id)
         {
             var papers = await _context.Papers
+                .Where(p => p.ProgrammeID == id)
+                .Select(p => new { CatchNumber = p.CatchNumber, PaperID = p.PaperID })
+                .ToListAsync();
+
+            if (papers == null || papers.Count == 0)
+            {
+                return NotFound();
+            }
+
+            return Ok(papers);
+        }
+
+        //if papers serched 
+        //show pagination data also with condition if all data or keygenerated data
+        [HttpGet("{currentPage}/{dataEntriesToShow}/Search")]
+        public async Task<ActionResult<object>> SearchPapers(int currentPage, int dataEntriesToShow, [FromQuery] string searchData, bool keyGenerated = false)
+        {
+            var query = _context.Papers
                 .GroupJoin(
                     _context.Programmes,
                     p => p.ProgrammeID,
@@ -369,7 +391,8 @@ namespace KeyGenerator.Controllers
                     (x, u) => new { x.Paper, x.Programme, x.Course, x.Subject, CreatedBy = u }
                 )
                 .Where(p =>
-                    p.Paper.PaperName.Contains(searchData) ||
+                    (keyGenerated ? p.Paper.KeyGenerated : true) && // Apply keyGenerated filter
+                    (p.Paper.PaperName.Contains(searchData) ||
                     p.Paper.CatchNumber.Contains(searchData) ||
                     p.Paper.PaperCode.Contains(searchData) ||
                     p.Paper.ExamType.Contains(searchData) ||
@@ -377,8 +400,14 @@ namespace KeyGenerator.Controllers
                     p.Programme.ProgrammeName.Contains(searchData) ||
                     p.Course.CourseName.Contains(searchData) ||
                     p.Subject.SubjectName.Contains(searchData) ||
-                    p.CreatedBy.FirstName.Contains(searchData)
-                )
+                    (p.CreatedBy != null && p.CreatedBy.FirstName.Contains(searchData)))
+                );
+
+            var totalCount = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling((double)totalCount / dataEntriesToShow);
+            var papers = await query
+                .Skip((currentPage - 1) * dataEntriesToShow)
+                .Take(dataEntriesToShow)
                 .Select(p => new PaperDetails
                 {
                     PaperID = p.Paper.PaperID,
@@ -409,31 +438,101 @@ namespace KeyGenerator.Controllers
                 return NotFound();
             }
 
-            return Ok(papers);
+            return new { Papers = papers, TotalPages = totalPages, TotalCount = totalCount };
+        }
+
+        // if papers not serched
+        //show pagination data also with condition if all data or keygenerated data
+        [HttpGet("{page}/{entries}")]
+        public async Task<ActionResult<object>> GetPapers(int page, int entries, bool keyGenerated = false)
+        {
+
+            IQueryable<Paper> query = _context.Papers;
+
+            if (keyGenerated)
+            {
+                query = query.Where(p => p.KeyGenerated);
+            }
+
+            var totalCount = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling((double)totalCount / entries);
+
+            var papers = await query
+                        .Skip((page - 1) * entries)
+                .Take(entries)
+                .GroupJoin(
+                    _context.Programmes,
+                    p => p.ProgrammeID,
+                    prg => prg.ProgrammeID,
+                    (p, prgs) => new { Paper = p, Programmes = prgs }
+                )
+                .SelectMany(
+                    x => x.Programmes.DefaultIfEmpty(),
+                    (x, prg) => new { x.Paper, Programme = prg }
+                )
+                .GroupJoin(
+                    _context.Courses,
+                    pc => pc.Paper.CourseID,
+                    c => c.CourseID,
+                    (pc, cs) => new { pc.Paper, pc.Programme, Courses = cs }
+                )
+                .SelectMany(
+                    x => x.Courses.DefaultIfEmpty(),
+                    (x, c) => new { x.Paper, x.Programme, Course = c }
+                )
+                .GroupJoin(
+                    _context.Subjects,
+                    pcs => pcs.Paper.SubjectID,
+                    s => s.SubjectID,
+                    (pcs, ss) => new { pcs.Paper, pcs.Programme, pcs.Course, Subjects = ss }
+                )
+                .SelectMany(
+                    x => x.Subjects.DefaultIfEmpty(),
+                    (x, s) => new { x.Paper, x.Programme, x.Course, Subject = s }
+                )
+                .GroupJoin(
+                    _context.Users,
+                    puc => puc.Paper.CreatedByID,
+                    u => u.UserID,
+                    (puc, us) => new { puc.Paper, puc.Programme, puc.Course, puc.Subject, Users = us }
+                )
+                .SelectMany(
+                    x => x.Users.DefaultIfEmpty(),
+                    (x, u) => new { x.Paper, x.Programme, x.Course, x.Subject, CreatedBy = u }
+                )
+                .Select(p => new PaperDetails
+                {
+                    PaperID = p.Paper.PaperID,
+                    ProgrammeID = p.Paper.ProgrammeID,
+                    PaperName = p.Paper.PaperName,
+                    CatchNumber = p.Paper.CatchNumber,
+                    PaperCode = p.Paper.PaperCode,
+                    CourseID = p.Paper.CourseID ?? 0,
+                    ExamType = p.Paper.ExamType,
+                    SubjectID = p.Paper.SubjectID ?? 0,
+                    PaperNumber = p.Paper.PaperNumber,
+                    ExamDate = p.Paper.ExamDate,
+                    NumberofQuestion = p.Paper.NumberofQuestion ?? 0,
+                    BookletSize = p.Paper.BookletSize ?? 0,
+                    CreatedAt = p.Paper.CreatedAt,
+                    CreatedByID = p.Paper.CreatedByID,
+                    MasterUploaded = p.Paper.MasterUploaded,
+                    KeyGenerated = p.Paper.KeyGenerated,
+                    ProgrammeName = p.Programme != null ? p.Programme.ProgrammeName : "",
+                    CourseName = p.Course != null ? p.Course.CourseName : "",
+                    SubjectName = p.Subject != null ? p.Subject.SubjectName : "",
+                    CreatedBy = p.CreatedBy != null ? p.CreatedBy.FirstName : ""
+                })
+                .ToListAsync();
+
+            return new { papers, totalPages, totalCount };
         }
 
 
-        //// POST: api/Papers
-        //// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        //[Authorize]
-        //[HttpPost]
-        //public async Task<ActionResult<Paper>> PostPaper(Paper paper)
-        //{
-        //    _context.Papers.Add(paper);
-        //    await _context.SaveChangesAsync();
-        //    var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name);
-        //    if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
-        //    {
-        //        // Now you have the user ID
-        //        _logger.LogEvent($"Paper: {paper.PaperName} Added ", "Paper", userId);
-        //    }
-
-        //    return CreatedAtAction("GetPaper", new { id = paper.PaperID }, paper);
-        //}
-
-        // DELETE: api/Papers/5
         [Authorize]
         [HttpDelete("{id}")]
+
+
         public async Task<IActionResult> DeletePaper(int id)
         {
             var paper = await _context.Papers.FindAsync(id);
