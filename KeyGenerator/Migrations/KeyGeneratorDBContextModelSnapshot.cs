@@ -188,6 +188,40 @@ namespace KeyGenerator.Migrations
                     b.ToTable("ExamTypes");
                 });
 
+            modelBuilder.Entity("KeyGenerator.Models.FileVerification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CatchNumber")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("IsCorrect")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("PageNumber")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProgramId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SeriesName")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("VerifiedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("VerifiedBy")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("fileVerifications");
+                });
+
             modelBuilder.Entity("KeyGenerator.Models.Group", b =>
                 {
                     b.Property<int>("GroupID")
@@ -265,6 +299,44 @@ namespace KeyGenerator.Migrations
                             ModuleID = 3,
                             ModuleName = "Masters"
                         });
+                });
+
+            modelBuilder.Entity("KeyGenerator.Models.PDFfile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CatchNumber")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("FileName")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("FilePath")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("ProgramId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SeriesName")
+                        .HasMaxLength(1)
+                        .HasColumnType("varchar(1)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("VerifiedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("VerifiedBy")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PDFfiles");
                 });
 
             modelBuilder.Entity("KeyGenerator.Models.Paper", b =>

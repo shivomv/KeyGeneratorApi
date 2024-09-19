@@ -170,7 +170,7 @@ namespace KeyGenerator.Controllers
                     <a href=""http://keygen.chandrakala.co.in/"" style=""display: inline-block; padding: 10px 20px; background-color: #007BFF; color: #fff; text-decoration: none; border-radius: 5px; margin-top: 15px;"">Login Here</a>
                 </div>";
 
-            var result = new EmailService(_context,_logger).SendEmail(user.EmailAddress, "Welcome to CUPL!", emailBody);
+            var result = new EmailService(_context,_logger, _configuration).SendEmail(user.EmailAddress, "Welcome to CUPL!", emailBody);
             /*var emailservice = new EmailService(_configuration);
             var result = emailservice.SendEmail(user.EmailAddress, "Welcome to CUPL!", emailBody);*/
             var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name);

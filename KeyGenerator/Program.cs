@@ -52,12 +52,15 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseCors();
-app.UseStaticFiles();
+
+
 
 app.MapControllers();
 

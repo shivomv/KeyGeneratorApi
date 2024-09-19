@@ -231,7 +231,7 @@ namespace KeyGenerator.Controllers
 
                 var Uni = _context.Groups.FirstOrDefault(u => u.GroupID == prog.GroupID);
                 /*var Sub = _context.Subjects.FirstOrDefault(u => u.SubjectID == KeyInput.SubjectID);*/
-                var paper = _context.Papers.FirstOrDefault(u => u.CatchNumber == KeyInput.CatchNumber);
+                var paper = _context.Papers.FirstOrDefault(u => u.CatchNumber == KeyInput.CatchNumber && u.ProgrammeID == KeyInput.ProgID);
                 paper.KeyGenerated = true;
                 _context.SaveChanges();
                 var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name);
@@ -324,6 +324,32 @@ namespace KeyGenerator.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+
+        [AllowAnonymous]
+        [HttpPost("GetPatternbyLine")]
+        public async Task<ActionResult<IEnumerable<object>>> GetPatternByLine(int bookletsize, string CatchNumber, int progId)
+        {
+            // Fetch all necessary records in one database query and select only the required fields
+            var answersKeys = await _context.AnswersKeys
+                .AsNoTracking() // Improve performance by not tracking entities in the context
+                .Where(u => u.PageNumber >= 3 && u.PageNumber <= bookletsize - 2
+                            && u.CatchNumber == CatchNumber
+                            && u.ProgID == progId)
+                .Select(x => new
+                {
+                    x.PageNumber,
+                    x.QuestionNumber,
+                    x.Answer,
+                    x.CatchNumber,
+                    x.SetID
+                })
+                .ToListAsync(); // Materialize the query
+
+            // Return the list of selected fields to the client
+            return Ok(answersKeys);
+        }
+
 
 
     }

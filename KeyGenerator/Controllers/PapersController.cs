@@ -143,22 +143,68 @@ namespace KeyGenerator.Controllers
 
         // post bulk paperdata
         [HttpPost]
-        public async Task<ActionResult<IEnumerable<Paper>>> PostPapers(IEnumerable<Paper> papers)
+        public async Task<ActionResult<PaperResponse>> PostPaper([FromBody] Paper paper)
         {
-            foreach (var paper in papers)
+            if (paper == null)
             {
-                _context.Papers.Add(paper);
-                var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name);
-                if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
-                {
-                    // Now you have the user ID
-                    _logger.LogEvent($"Paper: {paper.PaperName} Added ", "Paper", userId);
-                }
+                return BadRequest("Invalid paper data.");
             }
 
-            await _context.SaveChangesAsync();
+            // Check if a paper with the same ProgrammeID and CatchNumber already exists
+            var existingPaper = await _context.Papers
+                .FirstOrDefaultAsync(p => p.ProgrammeID == paper.ProgrammeID && p.CatchNumber == paper.CatchNumber);
 
-            return Ok(papers);
+            if (existingPaper != null)
+            {
+                return Conflict(new PaperResponse
+                {
+                    CatchNumber = paper.CatchNumber,
+                    Status = "Failed",
+                    Message = "A paper with the same Program and CatchNumber already exists."
+                });
+            }
+
+            _context.Papers.Add(paper);
+
+            // Extract the user ID from JWT claims
+            var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name);
+            int userId = 0;
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int parsedUserId))
+            {
+                userId = parsedUserId;
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                _logger.LogEvent($"Paper: {paper.ProgrammeID}_{paper.CatchNumber} added successfully.", "Paper", userId);
+
+                return Ok(new PaperResponse
+                {
+                    CatchNumber = paper.CatchNumber,
+                    Status = "Success",
+                    Message = "Paper added successfully."
+                });
+            }
+            catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("UNIQUE") == true)
+            {
+                // Handle unique constraint violation
+                _logger.LogError(ex.ToString(), "Unique constraint violation while adding paper.", "PostPaper");
+
+                return Conflict(new PaperResponse
+                {
+                    CatchNumber = paper.CatchNumber,
+                    Status = "Failed",
+                    Message = "A paper with the same Program and CatchNumber already exists."
+                });
+            }
+            catch (Exception ex)
+            {
+                // Handle other exceptions
+                _logger.LogError(ex.ToString(), "An error occurred while saving paper.", "PostPaper");
+
+                return StatusCode(500, "An error occurred while saving changes.");
+            }
         }
 
         //get all papers data by program id
@@ -241,10 +287,14 @@ namespace KeyGenerator.Controllers
         }
 
         //get basic papers by program id
+        //updated on 16/09/24 to add orderby Catch number
         [HttpGet("Programme/{id}")]
         public async Task<ActionResult<IEnumerable<Paper>>> GetPaperByProgrammeID(int id)
         {
-            var papers = await _context.Papers.Where(u => u.ProgrammeID == id).ToListAsync();
+            var papers = await _context.Papers
+                .Where(u => u.ProgrammeID == id)
+                .OrderBy(u => u.CatchNumber) // Assuming `CatchNumber` is the property you want to order by
+                .ToListAsync();
 
             if (papers == null || papers.Count == 0)
             {
@@ -328,6 +378,7 @@ namespace KeyGenerator.Controllers
 
         // Get catch number by Progam id
         //get catch numbers and paper IDs by program id
+        [AllowAnonymous]
         [HttpGet("CatchNumbersByProgramID/{id}")]
         public async Task<ActionResult<IEnumerable<object>>> GetCatchNumbersAndPaperIDsByProgramID(int id)
         {
@@ -440,6 +491,24 @@ namespace KeyGenerator.Controllers
 
             return new { Papers = papers, TotalPages = totalPages, TotalCount = totalCount };
         }
+
+        // GET: api/Papers/ByProgramAndCatchNumber/{programId}/{catchNumber}
+        // Get paper details by Program ID and Catch Number
+        [HttpGet("ByProgramAndCatchNumber/{programId}/{catchNumber}")]
+        public async Task<ActionResult<IEnumerable<Paper>>> GetPaperDetailsByProgramAndCatchNumber(int programId, string catchNumber)
+        {
+            var papers = await _context.Papers
+                .Where(p => p.ProgrammeID == programId && p.CatchNumber == catchNumber)
+                .ToListAsync();
+
+            if (papers == null || !papers.Any())
+            {
+                return NotFound(new { Message = "No papers found for the specified Program ID and Catch Number." });
+            }
+
+            return Ok(papers);
+        }
+
 
         // if papers not serched
         //show pagination data also with condition if all data or keygenerated data
@@ -556,6 +625,13 @@ namespace KeyGenerator.Controllers
         private bool PaperExists(int id)
         {
             return _context.Papers.Any(e => e.PaperID == id);
+        }
+
+        public class PaperResponse
+        {
+            public string CatchNumber { get; set; }
+            public string Status { get; set; }
+            public string Message { get; set; }
         }
     }
 }

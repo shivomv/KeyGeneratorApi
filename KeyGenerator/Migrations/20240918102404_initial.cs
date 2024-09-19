@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace KeyGenerator.Migrations
 {
     /// <inheritdoc />
-    public partial class masterkeyfileupload : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -128,6 +128,28 @@ namespace KeyGenerator.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "fileVerifications",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    CatchNumber = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    ProgramId = table.Column<int>(type: "int", nullable: false),
+                    PageNumber = table.Column<int>(type: "int", nullable: false),
+                    IsCorrect = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    VerifiedBy = table.Column<int>(type: "int", nullable: false),
+                    SeriesName = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    VerifiedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_fileVerifications", x => x.Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "Groups",
                 columns: table => new
                 {
@@ -206,6 +228,31 @@ namespace KeyGenerator.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Papers", x => x.PaperID);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "PDFfiles",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    FileName = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    FilePath = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    CatchNumber = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    SeriesName = table.Column<string>(type: "varchar(1)", maxLength: 1, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    ProgramId = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    VerifiedBy = table.Column<int>(type: "int", nullable: false),
+                    VerifiedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PDFfiles", x => x.Id);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -444,6 +491,9 @@ namespace KeyGenerator.Migrations
                 name: "ExamTypes");
 
             migrationBuilder.DropTable(
+                name: "fileVerifications");
+
+            migrationBuilder.DropTable(
                 name: "Groups");
 
             migrationBuilder.DropTable(
@@ -454,6 +504,9 @@ namespace KeyGenerator.Migrations
 
             migrationBuilder.DropTable(
                 name: "Papers");
+
+            migrationBuilder.DropTable(
+                name: "PDFfiles");
 
             migrationBuilder.DropTable(
                 name: "Permissions");

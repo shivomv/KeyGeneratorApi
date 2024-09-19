@@ -43,7 +43,7 @@ namespace KeyGenerator.Controllers
                 if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
                 {
                     // Now you have the user ID
-                    _logger.LogEvent($"Answer Updated for Qustion: {answerUpdate.QuestionNumber} From {answerUpdate.PreviousAnswer} to {answerUpdate.Answer} in Paper Id:  {answerUpdate.PaperID}", "Keys", userId);
+                    _logger.LogEvent($"Answer Updated for Question: {answerUpdate.QuestionNumber} From {answerUpdate.PreviousAnswer} to {answerUpdate.Answer} in Paper Id:  {answerUpdate.PaperID}", "Keys", userId);
                 }
 
             }

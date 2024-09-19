@@ -26,6 +26,8 @@ namespace KeyGenerator.Data
 
         public DbSet<BookletPdfData> bookletPdfs { get; set; }
         public DbSet<MasterKeyFile> masterKeyFiles { get; set; }
+        public DbSet<PDFfile> PDFfiles { get; set; }
+        public DbSet<FileVerification> fileVerifications { get; set; }
 
 
         public KeyGeneratorDBContext(DbContextOptions<KeyGeneratorDBContext> options) : base(options)
@@ -33,9 +35,17 @@ namespace KeyGenerator.Data
 
         }
 
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+
+            //// Configure unique constraints
+            //modelBuilder.Entity<Paper>()
+            //    .HasIndex(p => new { p.ProgrammeID, p.CatchNumber })
+            //    .IsUnique();
 
             modelBuilder.Entity<Permission>()
                 .HasIndex(p => new { p.UserID, p.ModuleID })
